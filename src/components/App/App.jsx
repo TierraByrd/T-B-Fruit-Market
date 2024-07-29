@@ -19,7 +19,7 @@ import InfoPage from '../InfoPage/InfoPage';
 import LandingPage from '../LandingPage/LandingPage';
 import LoginPage from '../LoginPage/LoginPage';
 import RegisterPage from '../RegisterPage/RegisterPage';
-
+import FruitMarketPage from '../FruitMarketPage/FruitMarketPage';
 import './App.css';
 
 function App() {
@@ -66,6 +66,14 @@ function App() {
             path="/info"
           >
             <InfoPage />
+          </ProtectedRoute>
+
+          <ProtectedRoute
+            // logged in shows FruitMarketPage else shows LoginPage
+            exact
+            path="/fruit"
+          >
+            <FruitMarketPage />
           </ProtectedRoute>
 
           <Route
