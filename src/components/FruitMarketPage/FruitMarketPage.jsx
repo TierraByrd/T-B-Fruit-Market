@@ -7,7 +7,7 @@ function FruitMarketPage() {
     const fruits = useSelector((state) => state.fruit.fruits);
     const isLoading = useSelector((state) => state.fruit.isLoading);
     const error = useSelector((state) => state.fruit.error);
-  const totalCash = useSelector((state) => state.user.total_cash);
+    const totalCash = useSelector((state) => state.fruit.totalCash);
     useEffect(() => {
         dispatch({ type: 'FETCH_FRUIT' }); 
     }, [dispatch]);
