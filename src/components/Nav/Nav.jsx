@@ -36,10 +36,6 @@ function Nav() {
               Market
             </Link>
 
-            <Link className="navLink" to="/inventory">
-              Inventory
-            </Link>
-
             <LogOutButton className="navLink" />
           </>
         )}
