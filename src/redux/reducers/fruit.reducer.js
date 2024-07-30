@@ -45,11 +45,26 @@ const fruitReducer = (state = initialState, action) => {
                   inventory: updatedInventory,
                   isLoading: false,
                 };
-                case 'SET_USER_CASH':
-            return {
-                ...state,
-                totalCash: action.payload,
-            };
+                case 'SELL_FRUIT_SUCCESS':
+                    const { fruitId: sellFruitId, quantity: sellQuantity } = action.payload;
+                    const sellFruit = state.fruits.find(fruit => fruit.id === sellFruitId);
+                    if (!sellFruit) return state;
+        
+                    const sellFruitPrice = parseFloat(sellFruit.current_price);
+                    const totalRevenue = sellFruitPrice * sellQuantity;
+        
+                    const updatedSellInventory = { ...state.inventory };
+                    if (updatedSellInventory[sellFruitId] >= sellQuantity) {
+                        updatedSellInventory[sellFruitId] -= sellQuantity;
+                        if (updatedSellInventory[sellFruitId] === 0) delete updatedSellInventory[sellFruitId];
+                    }
+        
+                    return {
+                        ...state,
+                        totalCash: state.totalCash + totalRevenue,
+                        inventory: updatedSellInventory,
+                        isLoading: false,
+                    };
               default:
                 return state;
             }

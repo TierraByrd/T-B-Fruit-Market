@@ -26,12 +26,24 @@ export function* buyFruit(action) {
   }
 }
 
-
+// Sell Fruit Saga
+export function* sellFruit(action) {
+  try {
+    const { fruitId, quantity } = action.payload;
+    yield axios.post('/api/fruit/sell', { fruitId, quantity });
+    yield put({ 
+        type: 'SELL_FRUIT_SUCCESS',
+        payload: action.payload
+    }); 
+  } catch (error) {
+    console.error('Error selling fruit:', error);
+  }
+}
 // Root Saga
 function* fruitSaga() {
     yield takeLatest('FETCH_FRUIT', fetchFruit);
      yield takeLatest('BUY_FRUIT_REQUEST', buyFruit);
-
+     yield takeLatest('SELL_FRUIT_REQUEST', sellFruit);
   }
   
 export default fruitSaga;

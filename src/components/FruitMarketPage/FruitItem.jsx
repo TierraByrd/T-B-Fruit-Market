@@ -11,16 +11,26 @@ const FruitItem = ({ fruit }) => {
       payload: {
         fruitId: fruit.id,
         quantity: 1, 
-      },
+      }, 
     });
   };
-
+const handleSell = () => {
+  dispatch({
+    type: 'SELL_FRUIT_REQUEST',
+    payload: {
+      fruitId: fruit.id,
+      quantity: 1,
+    },
+  })
+}
 
   return (
       <div className="fruit-item">
           <h3>{fruit.name}</h3>
           <p>Price: ${parseFloat(fruit.current_price).toFixed(2)}</p>
           <button onClick={handleBuy}>Buy</button>
+          <button onClick={handleSell}>Sell</button>
+
       </div>
   );
 };
