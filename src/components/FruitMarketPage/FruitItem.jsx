@@ -33,7 +33,7 @@ const FruitItem = ({ fruit }) => {
   return (
     <div className="fruit-item">
       <h3>{fruit.name}</h3>
-      <p>Price: ${parseFloat(fruit.current_price).toFixed(2)}</p>
+      <p>Average Price: ${parseFloat(fruit.current_price).toFixed(2)}</p>
       <button onClick={handleBuy}>Buy</button>
       <button 
         onClick={handleSell} 
