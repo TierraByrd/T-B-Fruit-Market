@@ -45,6 +45,11 @@ const fruitReducer = (state = initialState, action) => {
                   inventory: updatedInventory,
                   isLoading: false,
                 };
+                case 'SET_USER_CASH':
+            return {
+                ...state,
+                totalCash: action.payload,
+            };
               default:
                 return state;
             }

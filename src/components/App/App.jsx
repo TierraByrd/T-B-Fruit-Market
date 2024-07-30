@@ -20,6 +20,7 @@ import LandingPage from '../LandingPage/LandingPage';
 import LoginPage from '../LoginPage/LoginPage';
 import RegisterPage from '../RegisterPage/RegisterPage';
 import FruitMarketPage from '../FruitMarketPage/FruitMarketPage';
+import Inventory from '../Inventory/Inventory';
 import './App.css';
 
 function App() {
@@ -74,6 +75,14 @@ function App() {
             path="/fruit"
           >
             <FruitMarketPage />
+          </ProtectedRoute>
+
+          <ProtectedRoute
+            // logged in shows Inventory else shows LoginPage
+            exact
+            path="/inventory"
+          >
+            <Inventory />
           </ProtectedRoute>
 
           <Route
