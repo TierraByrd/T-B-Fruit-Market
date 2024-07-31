@@ -1,15 +1,6 @@
 import { put, call, takeLatest, select, all} from 'redux-saga/effects';
 import axios from 'axios';
 
-// Fetch User Balance Saga
-export function* fetchUserBalance() {
-    try {
-        const response = yield call(axios.get, '/api/user/balance');
-        yield put({ type: 'SET_TOTAL_CASH', payload: response.data.totalCash });
-    } catch (error) {
-        console.error('Error fetching user balance:', error);
-    }
-}
 
 // Fetch Fruits Saga
 export function* fetchFruit() {
