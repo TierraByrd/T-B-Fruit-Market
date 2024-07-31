@@ -50,7 +50,10 @@ function* updatePricesSaga() {
             return acc;
         }, {});
 
-        // Dispatch action to update fruit prices
+        // Dispatch action to update fruit prices in the server
+        yield call(axios.post, '/api/fruit/update-prices', updatedPrices);
+
+        // Dispatch action to update fruit prices in the Redux store
         yield put({ type: 'UPDATE_FRUIT_PRICES', payload: updatedPrices });
     } catch (error) {
         console.error('Error updating fruit prices:', error);

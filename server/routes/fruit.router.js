@@ -160,5 +160,29 @@ router.post('/sell', (req, res) => {
         res.sendStatus(500); 
     });
 });
+/**
+ * POST route to update fruit prices
+ */
+router.post('/update-prices', (req, res) => {
+    if (!req.isAuthenticated()) {
+        return res.sendStatus(401); 
+    }
+
+    const prices = req.body; 
+
+    // Prepare the SQL query
+    const updatePromises = Object.keys(prices).map(fruitId => {
+        const newPrice = prices[fruitId];
+        return pool.query('UPDATE "fruit" SET "current_price" = $1 WHERE "id" = $2', [newPrice, fruitId]);
+    });
+
+    // Execute all updates
+    Promise.all(updatePromises)
+        .then(() => res.sendStatus(200))
+        .catch(error => {
+            console.error('Error updating fruit prices:', error);
+            res.sendStatus(500);
+        });
+});
 
 module.exports = router;
