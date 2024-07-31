@@ -8,9 +8,10 @@ function FruitMarketPage() {
     const isLoading = useSelector((state) => state.fruit.isLoading);
     const error = useSelector((state) => state.fruit.error);
     const totalCash = useSelector((state) => state.fruit.totalCash);
+  
     useEffect(() => {
-        dispatch({ type: 'FETCH_FRUIT' }); 
-        dispatch({ type: 'FETCH_USER_BALANCE' });
+      dispatch({ type: 'FETCH_FRUIT' });
+      dispatch({ type: 'FETCH_USER_BALANCE' });
     
         const interval = setInterval(() => {
             dispatch({ type: 'UPDATE_PRICES_INTERVAL' });

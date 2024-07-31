@@ -49,4 +49,21 @@ router.post('/logout', (req, res, next) => {
   });
 });
 
+// Route to get user balance
+router.get('/balance', rejectUnauthenticated, async (req, res) => {
+  try {
+    const userId = req.user.id; // Get the user ID from the authenticated user
+    const queryText = 'SELECT total_cash FROM "user" WHERE id = $1';
+    const result = await pool.query(queryText, [userId]);
+    
+    if (result.rows.length > 0) {
+      res.json(result.rows[0]);
+    } else {
+      res.status(404).send('User not found');
+    }
+  } catch (error) {
+    console.error('Error fetching user balance:', error);
+    res.status(500).send('Server error');
+  }
+});
 module.exports = router;
