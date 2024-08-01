@@ -21,6 +21,15 @@ export function* buyFruit(action) {
         console.error('Error buying fruit:', error);
     }
 }
+//fetch purchased fruit
+export function* fetchPurchasedFruits() {
+    try {
+        const response = yield call(axios.get, '/api/fruit/purchased');
+        yield put({ type: 'SET_PURCHASED_FRUITS', payload: response.data });
+    } catch (error) {
+        console.error('Error fetching purchased fruits:', error);
+    }
+}
 
 // Sell Fruit Saga
 export function* sellFruit(action) {
@@ -72,6 +81,7 @@ export default function* rootSaga() {
         takeLatest('FETCH_FRUIT', fetchFruit),
         takeLatest('BUY_FRUIT_REQUEST', buyFruit),
         takeLatest('SELL_FRUIT_REQUEST', sellFruit),
+        takeLatest('FETCH_PURCHASED_FRUITS', fetchPurchasedFruits),
         watchPriceUpdates() // price update watcher saga
     ]);
 }

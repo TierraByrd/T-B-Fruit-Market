@@ -12,7 +12,8 @@ function FruitMarketPage() {
     useEffect(() => {
       dispatch({ type: 'FETCH_FRUIT' });
       dispatch({ type: 'FETCH_USER_BALANCE' });
-    
+      dispatch({ type: 'FETCH_PURCHASED_FRUITS' });
+      
         const interval = setInterval(() => {
             dispatch({ type: 'UPDATE_PRICES_INTERVAL' });
           }, 15000); // 15 seconds
