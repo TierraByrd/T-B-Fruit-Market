@@ -1,4 +1,4 @@
-import { put, call, takeLatest, select, all} from 'redux-saga/effects';
+import { put, call, takeLatest, select, all, takeEvery} from 'redux-saga/effects';
 import axios from 'axios';
 
 
@@ -68,12 +68,32 @@ function* updatePricesSaga() {
         console.error('Error updating fruit prices:', error);
     }
 }
-
+// Saga to get averaged purchased price
+function* fetchFruitAveragePrice(action) {
+    try {
+      // Make an API call
+      const response = yield call(axios.get, `/api/fruit/${action.payload.fruitId}/average-price`);
+      
+      // Dispatch an action with the result
+      yield put({
+        type: 'UPDATE_FRUIT_AVERAGE_PRICE',
+        payload: {
+          id: action.payload.fruitId,
+          averagePurchasedPrice: response.data.averagePurchasedPrice
+        }
+      });
+    } catch (error) {
+      console.error('Error fetching average price:', error);
+      // Optionally dispatch an action to handle the error
+    }
+  }
 // Watcher saga for periodic price updates
 function* watchPriceUpdates() {
     yield call(updatePricesSaga); // Initial update
     yield takeLatest('UPDATE_PRICES_INTERVAL', updatePricesSaga); // Handle price updates on action
+    yield takeEvery('FETCH_FRUIT_AVERAGE_PRICE_REQUEST', fetchFruitAveragePrice)
 }
+
 
 // Root Saga
 export default function* rootSaga() {

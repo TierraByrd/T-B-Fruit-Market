@@ -5,170 +5,163 @@ const router = express.Router();
 /**
  * GET route to fetch all fruits
  */
-router.get('/', (req, res) => {
+router.get('/', async (req, res) => {
     const queryText = `
-      SELECT * 
-      FROM "fruit"
+        SELECT f.*, COALESCE(pf.average_price, 0) as average_purchased_price
+        FROM "fruit" f
+        LEFT JOIN (
+            SELECT "fruit_id", 
+                   AVG("purchased_price") AS average_price 
+            FROM "purchased_fruit" 
+            GROUP BY "fruit_id"
+        ) pf ON f.id = pf.fruit_id
     `;
-    pool.query(queryText)
-      .then((result) => {
+    try {
+        const result = await pool.query(queryText);
         console.log('GET fruit route works:', result.rows);
-        res.send(result.rows);
-      })
-      .catch((error) => {
+        res.json(result.rows);
+    } catch (error) {
         console.error('Error in GET for fruit: ', error);
         res.sendStatus(500);
-      });
-  });
+    }
+});
 
 /**
  * POST route to buy a fruit
  */
-router.post('/buy', (req, res) => {
+router.post('/buy', async (req, res) => {
     if (!req.isAuthenticated()) {
-        return res.sendStatus(401); 
+        return res.sendStatus(401);
     }
 
     const { fruitId, quantity } = req.body;
 
     if (!fruitId || !quantity) {
-        return res.sendStatus(400); 
+        return res.sendStatus(400);
     }
 
-    // Start database transaction
-    pool.connect()
-     .then(client => {
-     return client.query('BEGIN')
-    .then(() => {
-     // Fetch fruit price
-     return client.query('SELECT "current_price" FROM "fruit" WHERE "id" = $1', [fruitId])
-     .then(result => {
-     if (result.rows.length === 0) {
-    throw new Error('Fruit not found');
-         }
-    const fruitPrice = parseFloat(result.rows[0].current_price);
+    const client = await pool.connect();
+    try {
+        await client.query('BEGIN');
 
-     // Calculate total cost
-    const totalCost = fruitPrice * quantity;
+        // Fetch fruit price
+        const fruitResult = await client.query('SELECT "current_price" FROM "fruit" WHERE "id" = $1', [fruitId]);
+        if (fruitResult.rows.length === 0) {
+            throw new Error('Fruit not found');
+        }
+        const fruitPrice = parseFloat(fruitResult.rows[0].current_price);
 
-     // Fetch user total cash
-     return client.query('SELECT "total_cash" FROM "user" WHERE "id" = $1', [req.user.id])
-    .then(result => {
-     const userCash = parseFloat(result.rows[0].total_cash);
-     if (userCash < totalCost) {
-     throw new Error('Insufficient funds');
-         }
+        // Calculate total cost
+        const totalCost = fruitPrice * quantity;
 
-     // Deduct cash from user
-     return client.query('UPDATE "user" SET "total_cash" = "total_cash" - $1 WHERE "id" = $2', [totalCost, req.user.id])
-    .then(() => {
-    // Add fruit to user inventory
-    return client.query(`
-    INSERT INTO "purchased_fruit" ("user_id", "fruit_id", "quantity", "purchased_price")
-    VALUES ($1, $2, $3, $4)
-    ON CONFLICT ("user_id", "fruit_id")
-    DO UPDATE SET "quantity" = "purchased_fruit"."quantity" + $3, "purchased_price" = $4
-    `, [req.user.id, fruitId, quantity, fruitPrice])
-    .then(() => {
-    // Commit the transaction
-    return client.query('COMMIT')
-    .then(() => {
-    client.release();
-    res.sendStatus(200); // OK
-     });
-     });
-     });
-     });
-     });
-     })
-    .catch(error => {
-    console.error('Error in transaction:', error);
-    return client.query('ROLLBACK')
-    .finally(() => {
-    client.release();
-    res.sendStatus(500); 
-     });
-     });
-     })
-    .catch(error => {
-    console.error('Error connecting to the database:', error);
-        res.sendStatus(500); // Internal Server Error
-        });
+        // Fetch user total cash
+        const userResult = await client.query('SELECT "total_cash" FROM "user" WHERE "id" = $1', [req.user.id]);
+        const userCash = parseFloat(userResult.rows[0].total_cash);
+        if (userCash < totalCost) {
+            throw new Error('Insufficient funds');
+        }
+
+        // Deduct cash from user
+        await client.query('UPDATE "user" SET "total_cash" = "total_cash" - $1 WHERE "id" = $2', [totalCost, req.user.id]);
+
+        // Check if fruit already exists in user's inventory
+        const existingResult = await client.query(`
+            SELECT "quantity", "purchased_price"
+            FROM "purchased_fruit"
+            WHERE "user_id" = $1 AND "fruit_id" = $2
+        `, [req.user.id, fruitId]);
+
+        if (existingResult.rows.length > 0) {
+            const currentQuantity = parseFloat(existingResult.rows[0].quantity);
+            const currentPurchasedPrice = parseFloat(existingResult.rows[0].purchased_price);
+
+            // Calculate new average purchased price
+            const newQuantity = currentQuantity + quantity;
+            const newPurchasedPrice = ((currentPurchasedPrice * currentQuantity) + (fruitPrice * quantity)) / newQuantity;
+
+            await client.query(`
+                UPDATE "purchased_fruit"
+                SET "quantity" = $1, "purchased_price" = $2
+                WHERE "user_id" = $3 AND "fruit_id" = $4
+            `, [newQuantity, newPurchasedPrice, req.user.id, fruitId]);
+        } else {
+            // Insert new record if fruit is not already in the user's inventory
+            await client.query(`
+                INSERT INTO "purchased_fruit" ("user_id", "fruit_id", "quantity", "purchased_price")
+                VALUES ($1, $2, $3, $4)
+            `, [req.user.id, fruitId, quantity, fruitPrice]);
+        }
+
+        await client.query('COMMIT');
+        res.sendStatus(200);
+    } catch (error) {
+        console.error('Error in transaction:', error);
+        await client.query('ROLLBACK');
+        res.sendStatus(500);
+    } finally {
+        client.release();
+    }
 });
+
 /**
  * POST route to sell a fruit
  */
-
-router.post('/sell', (req, res) => {
+router.post('/sell', async (req, res) => {
     if (!req.isAuthenticated()) {
-        return res.sendStatus(401); 
+        return res.sendStatus(401);
     }
 
     const { fruitId, quantity } = req.body;
 
     if (!fruitId || !quantity) {
-        return res.sendStatus(400); 
+        return res.sendStatus(400);
     }
 
-    // Start database transaction
-    pool.connect()
-    .then(client => {
-        return client.query('BEGIN')
-        .then(() => {
-            // Fetch fruit price
-            return client.query('SELECT "current_price" FROM "fruit" WHERE "id" = $1', [fruitId])
-            .then(result => {
-                if (result.rows.length === 0) {
-                    throw new Error('Fruit not found');
-                }
-                const fruitPrice = parseFloat(result.rows[0].current_price);
+    const client = await pool.connect();
+    try {
+        await client.query('BEGIN');
 
-                // Calculate total revenue
-                const totalRevenue = fruitPrice * quantity;
+        // Fetch fruit price
+        const result = await client.query('SELECT "current_price" FROM "fruit" WHERE "id" = $1', [fruitId]);
+        if (result.rows.length === 0) {
+            throw new Error('Fruit not found');
+        }
+        const fruitPrice = parseFloat(result.rows[0].current_price);
 
-                // Update user cash
-                return client.query('UPDATE "user" SET "total_cash" = "total_cash" + $1 WHERE "id" = $2', [totalRevenue, req.user.id])
-                .then(() => {
-                    // Remove fruit from user inventory
-                    return client.query(`
-                        UPDATE "purchased_fruit"
-                        SET "quantity" = "quantity" - $1
-                        WHERE "user_id" = $2 AND "fruit_id" = $3
-                    `, [quantity, req.user.id, fruitId])
-                    .then(() => {
-                        // Commit the transaction
-                        return client.query('COMMIT')
-                        .then(() => {
-                            client.release();
-                            res.sendStatus(200); 
-                        });
-                    });
-                });
-            });
-        })
-        .catch(error => {
-            console.error('Error in transaction:', error);
-            return client.query('ROLLBACK')
-            .finally(() => {
-                client.release();
-                res.sendStatus(500); 
-            });
-        });
-    })
-    .catch(error => {
-        console.error('Error connecting to the database:', error);
-        res.sendStatus(500); 
-    });
+        // Calculate total revenue
+        const totalRevenue = fruitPrice * quantity;
+
+        // Update user cash
+        await client.query('UPDATE "user" SET "total_cash" = "total_cash" + $1 WHERE "id" = $2', [totalRevenue, req.user.id]);
+
+        // Remove fruit from user inventory
+        await client.query(`
+            UPDATE "purchased_fruit"
+            SET "quantity" = "quantity" - $1
+            WHERE "user_id" = $2 AND "fruit_id" = $3
+        `, [quantity, req.user.id, fruitId]);
+
+        // Commit the transaction
+        await client.query('COMMIT');
+        res.sendStatus(200);
+    } catch (error) {
+        console.error('Error in transaction:', error);
+        await client.query('ROLLBACK');
+        res.sendStatus(500);
+    } finally {
+        client.release();
+    }
 });
+
 /**
  * POST route to update fruit prices
  */
-router.post('/update-prices', (req, res) => {
+router.post('/update-prices', async (req, res) => {
     if (!req.isAuthenticated()) {
-        return res.sendStatus(401); 
+        return res.sendStatus(401);
     }
 
-    const prices = req.body; 
+    const prices = req.body;
 
     // Prepare the SQL query
     const updatePromises = Object.keys(prices).map(fruitId => {
@@ -177,14 +170,19 @@ router.post('/update-prices', (req, res) => {
     });
 
     // Execute all updates
-    Promise.all(updatePromises)
-        .then(() => res.sendStatus(200))
-        .catch(error => {
-            console.error('Error updating fruit prices:', error);
-            res.sendStatus(500);
-        });
+    try {
+        await Promise.all(updatePromises);
+        res.sendStatus(200);
+    } catch (error) {
+        console.error('Error updating fruit prices:', error);
+        res.sendStatus(500);
+    }
 });
-router.get('/purchased', (req, res) => {
+
+/**
+ * GET route to fetch purchased fruits for the authenticated user
+ */
+router.get('/purchased', async (req, res) => {
     if (!req.isAuthenticated()) {
         return res.sendStatus(401);
     }
@@ -196,12 +194,13 @@ router.get('/purchased', (req, res) => {
         WHERE pf.user_id = $1
     `;
 
-    pool.query(queryText, [req.user.id])
-        .then(result => res.json(result.rows))
-        .catch(error => {
-            console.error('Error fetching purchased fruits:', error);
-            res.sendStatus(500);
-        });
+    try {
+        const result = await pool.query(queryText, [req.user.id]);
+        res.json(result.rows);
+    } catch (error) {
+        console.error('Error fetching purchased fruits:', error);
+        res.sendStatus(500);
+    }
 });
 
 module.exports = router;
