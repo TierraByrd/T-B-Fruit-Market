@@ -184,5 +184,24 @@ router.post('/update-prices', (req, res) => {
             res.sendStatus(500);
         });
 });
+router.get('/purchased', (req, res) => {
+    if (!req.isAuthenticated()) {
+        return res.sendStatus(401);
+    }
+
+    const queryText = `
+        SELECT f.id, f.name, pf.quantity, pf.purchased_price
+        FROM "purchased_fruit" pf
+        JOIN "fruit" f ON f.id = pf.fruit_id
+        WHERE pf.user_id = $1
+    `;
+
+    pool.query(queryText, [req.user.id])
+        .then(result => res.json(result.rows))
+        .catch(error => {
+            console.error('Error fetching purchased fruits:', error);
+            res.sendStatus(500);
+        });
+});
 
 module.exports = router;

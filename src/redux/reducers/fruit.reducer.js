@@ -97,6 +97,16 @@ const fruitReducer = (state = initialState, action) => {
                     return fruit;
                 }),
             };
+            case 'SET_PURCHASED_FRUITS':
+                const purchasedFruits = action.payload.reduce((acc, item) => {
+                    acc[item.id] = (acc[item.id] || 0) + item.quantity;
+                    return acc;
+                }, {});
+    
+                return {
+                    ...state,
+                    inventory: purchasedFruits
+                };
         default:
             return state;
     }
