@@ -14,15 +14,15 @@ const fruitReducer = (state = initialState, action) => {
                 isLoading: true,
                 error: null,
             };
-        case 'SET_FRUIT':
-            return {
-                ...state,
-                fruits: action.payload.map(fruit => ({
-                    ...fruit,
-                    averagePurchasedPrice: 0, // Initialize
-                })),
-                isLoading: false,
-            };
+            case 'SET_FRUIT':
+                return {
+                    ...state,
+                    fruits: action.payload.map(fruit => ({
+                        ...fruit,
+                        averagePurchasedPrice: parseFloat(fruit.average_purchased_price) || 0, // Update with fetched value
+                    })),
+                    isLoading: false,
+                };
         case 'BUY_FRUIT_REQUEST':
             return {
                 ...state,
@@ -81,22 +81,15 @@ const fruitReducer = (state = initialState, action) => {
                 ...state,
                 totalCash: action.payload,
             };
-        case 'UPDATE_PURCHASED_PRICE':
-            return {
-                ...state,
-                fruits: state.fruits.map(fruit => {
-                    if (fruit.id === action.payload.fruitId) {
-                        const totalPurchases = action.payload.totalPurchases;
-                        const totalCost = action.payload.totalCost;
-                        const averagePrice = totalCost / totalPurchases;
-                        return {
-                            ...fruit,
-                            averagePurchasedPrice: averagePrice,
-                        };
-                    }
-                    return fruit;
-                }),
-            };
+            case 'UPDATE_FRUIT_AVERAGE_PRICE':
+                return {
+                    ...state,
+                    fruits: state.fruits.map(fruit =>
+                        fruit.id === action.payload.id
+                            ? { ...fruit, averagePurchasedPrice: action.payload.averagePurchasedPrice }
+                            : fruit
+                    ),
+                };
             case 'SET_PURCHASED_FRUITS':
                 const purchasedFruits = action.payload.reduce((acc, item) => {
                     acc[item.id] = (acc[item.id] || 0) + item.quantity;
