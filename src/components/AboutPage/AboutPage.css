@@ -56,3 +56,12 @@ ul li {
     font-size: 1.2em; 
   }
 }
+.qr-code {
+  width: 80%;      /* Adjust percentage based on needs */
+  max-width: 500px; /* Set a maximum width */
+  height: auto;   /* Maintain aspect ratio */
+  border: 2px solid #000;  /* Optional: add a border */
+  border-radius: 8px;     /* Optional: round corners */
+  padding: 5px;  /* Optional: add space around the image */
+  
+}
