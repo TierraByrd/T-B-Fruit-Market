@@ -76,6 +76,11 @@ const fruitReducer = (state = initialState, action) => {
                     current_price: action.payload[fruit.id] || fruit.current_price,
                 })),
             };
+            case 'SET_USER_INFO':
+                return {
+                    ...state,
+                    user: action.payload,
+                };
         case 'FETCH_TOTAL_CASH':
             return {
                 ...state,

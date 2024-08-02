@@ -36,6 +36,7 @@ const FruitItem = ({ fruit }) => {
 
   return (
     <div className="fruit-item">
+      {fruit.imageUrl && <img src={fruit.imageUrl} alt={fruit.name} className="fruit-image" />}
         <h3>{fruit.name}</h3>
         <p>Market Price: ${parseFloat(fruit.current_price).toFixed(2)}</p>
         <p>Average Purchased Price: ${parseFloat(fruit.averagePurchasedPrice).toFixed(2)}</p>
