@@ -1,0 +1,18 @@
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+  }
+  
+  h2, h3 {
+    color: #333;
+  }
+  
+  p {
+    line-height: 1.6;
+    margin-bottom: 15px;
+  }
+  
+  strong {
+    font-weight: bold;
+  }
