@@ -16,6 +16,8 @@ export function* fetchFruit() {
 export function* buyFruit(action) {
     try {
         yield call(axios.post, '/api/fruit/buy', action.payload);
+         // Fetch updated average price
+        yield put({ type: 'FETCH_FRUIT_AVERAGE_PRICE_REQUEST', payload: { fruitId: action.payload.fruitId } });
         yield put({ type: 'BUY_FRUIT_SUCCESS', payload: action.payload });
     } catch (error) {
         console.error('Error buying fruit:', error);
@@ -71,27 +73,22 @@ function* updatePricesSaga() {
 // Saga to get averaged purchased price
 function* fetchFruitAveragePrice(action) {
     try {
-      // Make an API call
-      const response = yield call(axios.get, `/api/fruit/${action.payload.fruitId}/average-price`);
-      
-      // Dispatch an action with the result
-      yield put({
-        type: 'UPDATE_FRUIT_AVERAGE_PRICE',
-        payload: {
-          id: action.payload.fruitId,
-          averagePurchasedPrice: response.data.averagePurchasedPrice
-        }
-      });
+        const response = yield call(axios.get, `/api/fruit/${action.payload.fruitId}/average-price`);
+        yield put({
+            type: 'UPDATE_FRUIT_AVERAGE_PRICE',
+            payload: {
+                id: action.payload.fruitId,
+                averagePurchasedPrice: response.data.averagePurchasedPrice
+            }
+        });
     } catch (error) {
-      console.error('Error fetching average price:', error);
-      // Optionally dispatch an action to handle the error
+        console.error('Error fetching average price:', error);
     }
-  }
+}
 // Watcher saga for periodic price updates
 function* watchPriceUpdates() {
     yield call(updatePricesSaga); // Initial update
     yield takeLatest('UPDATE_PRICES_INTERVAL', updatePricesSaga); // Handle price updates on action
-    yield takeEvery('FETCH_FRUIT_AVERAGE_PRICE_REQUEST', fetchFruitAveragePrice)
 }
 
 
@@ -102,6 +99,7 @@ export default function* rootSaga() {
         takeLatest('BUY_FRUIT_REQUEST', buyFruit),
         takeLatest('SELL_FRUIT_REQUEST', sellFruit),
         takeLatest('FETCH_PURCHASED_FRUITS', fetchPurchasedFruits),
-        watchPriceUpdates() // price update watcher saga
+        takeEvery('FETCH_FRUIT_AVERAGE_PRICE_REQUEST', fetchFruitAveragePrice), // Make sure this is added
+        watchPriceUpdates()
     ]);
 }

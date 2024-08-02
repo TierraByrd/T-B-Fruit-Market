@@ -1,4 +1,4 @@
-import React from 'react';
+import React, {useEffect} from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 
 const FruitItem = ({ fruit }) => {
@@ -26,24 +26,28 @@ const FruitItem = ({ fruit }) => {
       },
     });
   };
+ // Fetch updated average price when component mounts or fruit ID changes
+ useEffect(() => {
+  dispatch({ type: 'FETCH_FRUIT_AVERAGE_PRICE_REQUEST', payload: { fruitId: fruit.id } });
+}, [dispatch, fruit.id]);
 
   // Determine available quantity for selling
   const availableQuantity = inventory[fruit.id] || 0;
 
   return (
     <div className="fruit-item">
-      <h3>{fruit.name}</h3>
-      <p>Market Price: ${parseFloat(fruit.current_price).toFixed(2)}</p>
-      <p>Average Purchased Price: ${parseFloat(fruit.averagePurchasedPrice).toFixed(2)}</p>
-      <button onClick={handleBuy}>Buy</button>
-      <button 
-        onClick={handleSell} 
-        disabled={availableQuantity <= 0}
-      >
-        Sell ({availableQuantity})
-      </button>
+        <h3>{fruit.name}</h3>
+        <p>Market Price: ${parseFloat(fruit.current_price).toFixed(2)}</p>
+        <p>Average Purchased Price: ${parseFloat(fruit.averagePurchasedPrice).toFixed(2)}</p>
+        <button onClick={handleBuy}>Buy</button>
+        <button 
+            onClick={handleSell} 
+            disabled={availableQuantity <= 0}
+        >
+            Sell ({availableQuantity})
+        </button>
     </div>
-  );
+);
 };
 
 export default FruitItem;

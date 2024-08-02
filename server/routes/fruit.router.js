@@ -202,5 +202,21 @@ router.get('/purchased', async (req, res) => {
         res.sendStatus(500);
     }
 });
+router.get('/:fruitId/average-price', async (req, res) => {
+    const { fruitId } = req.params;
 
+    const queryText = `
+        SELECT COALESCE(AVG("purchased_price"), 0) as average_purchased_price
+        FROM "purchased_fruit"
+        WHERE "fruit_id" = $1
+    `;
+
+    try {
+        const result = await pool.query(queryText, [fruitId]);
+        res.json({ averagePurchasedPrice: parseFloat(result.rows[0].average_purchased_price) });
+    } catch (error) {
+        console.error('Error fetching average price:', error);
+        res.sendStatus(500);
+    }
+});
 module.exports = router;
