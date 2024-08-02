@@ -1,0 +1,64 @@
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+  }
+  
+  .fruit-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+  }
+  
+  .fruit-item {
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    padding: 10px;
+    background-color: #c2a972;
+    width: 200px; /* Adjust the width as needed */
+    text-align: center;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+  }
+  
+  .fruit-item:hover {
+    transform: scale(1.05); /* Slightly enlarge the item */
+    box-shadow: 0 4px 8px rgba(245, 133, 20, 0.952); /* Add shadow */
+  }
+  
+  .fruit-image {
+    width: 100px; /* Set the desired width */
+    height: 100px; /* Set the desired height */
+    object-fit: cover; /* Ensure image covers the area */
+    margin-bottom: 10px;
+    transition: opacity 0.2s ease;
+  }
+  
+  .fruit-item:hover .fruit-image {
+    opacity: 0.8; /* Slightly fade the image */
+  }
+  
+  button {
+    padding: 8px 12px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    margin: 5px;
+    font-size: 16px;
+    transition: background-color 0.2s ease, transform 0.2s ease;
+  }
+  
+  button:disabled {
+    background-color: #f1e0cc;
+    cursor: not-allowed;
+  }
+  
+  button:not(:disabled) {
+    background-color: #eb9f52;
+    color: rgb(106, 71, 47);
+  }
+  
+  button:not(:disabled):hover {
+    background-color: #eb8a35; 
+    transform: scale(1.05); 
+  }
+  
