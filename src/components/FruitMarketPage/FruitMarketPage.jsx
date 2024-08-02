@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import FruitItem from './FruitItem';
-
+import './FruitMarketPage.css'
 function FruitMarketPage() {
     const dispatch = useDispatch();
     const fruits = useSelector((state) => state.fruit.fruits);
