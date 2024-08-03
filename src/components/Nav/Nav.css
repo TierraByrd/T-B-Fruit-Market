@@ -1,16 +1,14 @@
 .nav {
-  /* flex box layout */
   display: flex;
   justify-content: space-between;
   align-items: center;
-
   margin: 0 0 30px;
-  background-color: #00acb0;
+  background-color: #8f6f45;
   overflow: hidden;
 }
 
 .nav a {
-  text-decoration: none;
+  text-decoration: none; /* Remove underline from all links */
 }
 
 .nav-title {
@@ -21,22 +19,36 @@
   margin: 0;
 }
 
-.navLink {
+.navLink, .button {
   display: inline-block;
-  color: #f2f2f2;
-  background-color: #00acb0;
+  color: #040200;
+  background-color: #eb9f52;
   text-align: center;
-  padding: 24px 10px;
-  text-decoration: none;
+  padding: 12px 20px; 
+  text-decoration: none; 
   font-size: 15px;
 
-  /* these last two make the logout button in
-  the nav bar look like another link */
   border: none;
   cursor: pointer;
   outline: 0;
+  border-radius: 4px; 
 }
 
-.navLink:hover {
-  background-color: #008183;
+.navLink:hover, .button:hover {
+  background-color: #e47d16;
+}
+
+/* Centering fruit list */
+.fruit-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+  justify-content: center; /* Center the items horizontally */
+}
+
+/* Button styles specific to buttons in fruit list */
+.button {
+  padding: 8px 12px;
+  font-size: 16px;
+  margin: 5px;
 }

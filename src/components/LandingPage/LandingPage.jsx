@@ -6,7 +6,7 @@ import './LandingPage.css';
 import RegisterForm from '../RegisterForm/RegisterForm';
 
 function LandingPage() {
-  const [heading, setHeading] = useState('Welcome');
+  const [heading, setHeading] = useState('Welcome to Fruit Market');
   const history = useHistory();
 
   const onLogin = (event) => {
@@ -19,36 +19,16 @@ function LandingPage() {
 
       <div className="grid">
         <div className="grid-col grid-col_8">
-          <p>
-            Lorem ipsum dolor sit amet, consectetur adipiscing elit. Curabitur
-            id felis metus. Vestibulum et pulvinar tortor. Morbi pharetra lacus
-            ut ex molestie blandit. Etiam et turpis sit amet risus mollis
-            interdum. Suspendisse et justo vitae metus bibendum fringilla sed
-            sed justo. Aliquam sollicitudin dapibus lectus, vitae consequat odio
-            elementum eget. Praesent efficitur eros vitae nunc interdum, eu
-            interdum justo facilisis. Sed pulvinar nulla ac dignissim efficitur.
-            Quisque eget eros metus. Vestibulum bibendum fringilla nibh a
-            luctus. Duis a sapien metus.
+        <p>
+            Discover the best place to buy and sell fresh, high-quality fruits. At Fruit Market, we connect enthusiasts and sellers through a seamless platform, ensuring you get the finest produce with ease.
           </p>
 
           <p>
-            Praesent consectetur orci dui, id elementum eros facilisis id. Sed
-            id dolor in augue porttitor faucibus eget sit amet ante. Nunc
-            consectetur placerat pharetra. Aenean gravida ex ut erat commodo, ut
-            finibus metus facilisis. Nullam eget lectus non urna rhoncus
-            accumsan quis id massa. Curabitur sit amet dolor nisl. Proin
-            euismod, augue at condimentum rhoncus, massa lorem semper lacus, sed
-            lobortis augue mi vel felis. Duis ultrices sapien at est convallis
-            congue.
+            Our platform provides real-time pricing, a diverse selection of fruits, and easy transactions. Whether you're looking to purchase or sell, Fruit Market is here to make your experience enjoyable and efficient.
           </p>
 
           <p>
-            Fusce porta diam ac tortor elementum, ut imperdiet metus volutpat.
-            Suspendisse posuere dapibus maximus. Aliquam vitae felis libero. In
-            vehicula sapien at semper ultrices. Vivamus sed feugiat libero. Sed
-            sagittis neque id diam euismod, ut egestas felis ultricies. Nullam
-            non fermentum mauris. Sed in enim ac turpis faucibus pretium in sit
-            amet nisi.
+            Join our community today and enjoy the benefits of fresh, high-quality fruits delivered right to your doorstep. Explore our range of offerings and experience the best of the fruit market.
           </p>
         </div>
         <div className="grid-col grid-col_4">
