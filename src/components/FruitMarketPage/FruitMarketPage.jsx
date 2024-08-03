@@ -23,7 +23,7 @@ function FruitMarketPage() {
         return (
             <div className="container">
               <h2>Welcome to the Market</h2>
-              <p>Total Available Cash: ${parseFloat(totalCash).toFixed(2)}</p>
+              <h3>Total Available Cash: ${parseFloat(totalCash).toFixed(2)}</h3>
         
               {isLoading && <p>Loading...</p>}
               {error && <p>Error: {error}</p>}

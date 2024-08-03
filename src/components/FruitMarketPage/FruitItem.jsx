@@ -1,6 +1,7 @@
 import React, {useEffect} from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 
+
 const FruitItem = ({ fruit }) => {
   const dispatch = useDispatch();
   
@@ -26,10 +27,12 @@ const FruitItem = ({ fruit }) => {
       },
     });
   };
+  
  // Fetch updated average price when component mounts or fruit ID changes
  useEffect(() => {
   dispatch({ type: 'FETCH_FRUIT_AVERAGE_PRICE_REQUEST', payload: { fruitId: fruit.id } });
 }, [dispatch, fruit.id]);
+
 
   // Determine available quantity for selling
   const availableQuantity = inventory[fruit.id] || 0;
