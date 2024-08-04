@@ -160,4 +160,7 @@ For questions or feedback, please contact Tierra Byrd - https://www.linkedin.com
 
 ## Acknowledgments
 
+Special Thanks:
+- To the open-source community for providing tools and libraries.
+- To family and friends that provided feedback and assistance during development.
 
