@@ -161,21 +161,38 @@ router.post('/update-prices', async (req, res) => {
         return res.sendStatus(401);
     }
 
-    const prices = req.body;
+    const { fruitId, currentPrice } = req.body;
 
-    // Prepare the SQL query
-    const updatePromises = Object.keys(prices).map(fruitId => {
-        const newPrice = prices[fruitId];
-        return pool.query('UPDATE "fruit" SET "current_price" = $1 WHERE "id" = $2', [newPrice, fruitId]);
-    });
+    if (!fruitId || !currentPrice) {
+        return res.sendStatus(400);
+    }
 
-    // Execute all updates
+    const client = await pool.connect();
     try {
-        await Promise.all(updatePromises);
-        res.sendStatus(200);
+        await client.query('BEGIN');
+
+        // Lock the row to prevent concurrent updates
+        await client.query('SELECT "current_price" FROM "fruit" WHERE "id" = $1 FOR UPDATE', [fruitId]);
+
+        // Calculate new price 
+        const change = (Math.random() * 0.49 + 0.01) * (Math.random() < 0.5 ? -1 : 1);
+        let newPrice = Math.max(0.50, Math.min(9.99, parseFloat(currentPrice) + change));
+        newPrice = parseFloat(newPrice.toFixed(2));
+
+        // Update fruit price
+        await client.query(
+            'UPDATE "fruit" SET "current_price" = $1 WHERE "id" = $2',
+            [newPrice, fruitId]
+        );
+
+        await client.query('COMMIT');
+        res.json({ newPrice });
     } catch (error) {
         console.error('Error updating fruit prices:', error);
+        await client.query('ROLLBACK');
         res.sendStatus(500);
+    } finally {
+        client.release();
     }
 });
 

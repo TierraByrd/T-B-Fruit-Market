@@ -44,27 +44,22 @@ export function* sellFruit(action) {
     }
 }
 
-// Helper function to generate new price
-const generateNewPrice = (currentPrice) => {
-  const change = (Math.random() * 0.49 + 0.01) * (Math.random() < 0.5 ? -1 : 1);
-  let newPrice = Math.max(0.50, Math.min(9.99, parseFloat(currentPrice) + change));
-  return parseFloat(newPrice.toFixed(2));
-};
-
 // Saga to update fruit prices
 function* updatePricesSaga() {
     try {
-        // Get current fruit prices from the Redux store
         const fruits = yield select(state => state.fruit.fruits);
-        const updatedPrices = fruits.reduce((acc, fruit) => {
-            acc[fruit.id] = generateNewPrice(fruit.current_price);
+
+        const updatePromises = fruits.map(fruit => {
+            const { id, current_price } = fruit;
+            return call(axios.post, '/api/fruit/update-prices', { fruitId: id, currentPrice: current_price });
+        });
+
+        const responses = yield all(updatePromises);
+        const updatedPrices = responses.reduce((acc, response) => {
+            acc[response.data.fruitId] = response.data.newPrice;
             return acc;
         }, {});
 
-        // Dispatch action to update fruit prices in the server
-        yield call(axios.post, '/api/fruit/update-prices', updatedPrices);
-
-        // Dispatch action to update fruit prices in the Redux store
         yield put({ type: 'UPDATE_FRUIT_PRICES', payload: updatedPrices });
     } catch (error) {
         console.error('Error updating fruit prices:', error);
