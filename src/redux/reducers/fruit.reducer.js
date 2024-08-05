@@ -14,15 +14,15 @@ const fruitReducer = (state = initialState, action) => {
                 isLoading: true,
                 error: null,
             };
-            case 'SET_FRUIT':
-                return {
-                    ...state,
-                    fruits: action.payload.map(fruit => ({
-                        ...fruit,
-                        averagePurchasedPrice: parseFloat(fruit.average_purchased_price) || 0, // Update with fetched value
-                    })),
-                    isLoading: false,
-                };
+        case 'SET_FRUIT':
+            return {
+                ...state,
+                fruits: action.payload.map(fruit => ({
+                    ...fruit,
+                    averagePurchasedPrice: parseFloat(fruit.average_purchased_price) || 0, 
+                })),
+                isLoading: false,
+            };
         case 'BUY_FRUIT_REQUEST':
             return {
                 ...state,
@@ -43,9 +43,15 @@ const fruitReducer = (state = initialState, action) => {
 
             return {
                 ...state,
-                totalCash: state.totalCash - totalCost,
+                totalCash: state.totalCash - totalCost >= 0 ? state.totalCash - totalCost : 0,
                 inventory: updatedInventory,
                 isLoading: false,
+            };
+        case 'BUY_FRUIT_FAILURE':
+            return {
+                ...state,
+                isLoading: false,
+                error: action.payload.error,
             };
         case 'SELL_FRUIT_SUCCESS':
             const { fruitId: sellFruitId, quantity: sellQuantity } = action.payload;
@@ -76,35 +82,35 @@ const fruitReducer = (state = initialState, action) => {
                     current_price: action.payload[fruit.id] || fruit.current_price,
                 })),
             };
-            case 'SET_USER_INFO':
-                return {
-                    ...state,
-                    user: action.payload,
-                };
+        case 'SET_USER_INFO':
+            return {
+                ...state,
+                user: action.payload,
+            };
         case 'FETCH_TOTAL_CASH':
             return {
                 ...state,
                 totalCash: action.payload,
             };
-            case 'UPDATE_FRUIT_AVERAGE_PRICE':
-                return {
-                    ...state,
-                    fruits: state.fruits.map(fruit =>
-                        fruit.id === action.payload.id
-                            ? { ...fruit, averagePurchasedPrice: action.payload.averagePurchasedPrice }
-                            : fruit
-                    ),
-                };
-            case 'SET_PURCHASED_FRUITS':
-                const purchasedFruits = action.payload.reduce((acc, item) => {
-                    acc[item.id] = (acc[item.id] || 0) + item.quantity;
-                    return acc;
-                }, {});
-    
-                return {
-                    ...state,
-                    inventory: purchasedFruits
-                };
+        case 'UPDATE_FRUIT_AVERAGE_PRICE':
+            return {
+                ...state,
+                fruits: state.fruits.map(fruit =>
+                    fruit.id === action.payload.id
+                        ? { ...fruit, averagePurchasedPrice: action.payload.averagePurchasedPrice }
+                        : fruit
+                ),
+            };
+        case 'SET_PURCHASED_FRUITS':
+            const purchasedFruits = action.payload.reduce((acc, item) => {
+                acc[item.id] = (acc[item.id] || 0) + item.quantity;
+                return acc;
+            }, {});
+
+            return {
+                ...state,
+                inventory: purchasedFruits
+            };
         default:
             return state;
     }

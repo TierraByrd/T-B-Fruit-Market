@@ -58,7 +58,7 @@ router.post('/buy', async (req, res) => {
         const userResult = await client.query('SELECT "total_cash" FROM "user" WHERE "id" = $1', [req.user.id]);
         const userCash = parseFloat(userResult.rows[0].total_cash);
         if (userCash < totalCost) {
-            throw new Error('Insufficient funds');
+            return res.status(400).json({ error: 'Insufficient funds' });
         }
 
         // Deduct cash from user

@@ -15,12 +15,20 @@ export function* fetchFruit() {
 // Buy Fruit Saga
 export function* buyFruit(action) {
     try {
-        yield call(axios.post, '/api/fruit/buy', action.payload);
-         // Fetch updated average price
-        yield put({ type: 'FETCH_FRUIT_AVERAGE_PRICE_REQUEST', payload: { fruitId: action.payload.fruitId } });
-        yield put({ type: 'BUY_FRUIT_SUCCESS', payload: action.payload });
+        const response = yield call(axios.post, '/api/fruit/buy', action.payload);
+
+        if (response.status === 200) {
+            // Fetch updated average price
+            yield put({ type: 'FETCH_FRUIT_AVERAGE_PRICE_REQUEST', payload: { fruitId: action.payload.fruitId } });
+            yield put({ type: 'BUY_FRUIT_SUCCESS', payload: action.payload });
+        }
     } catch (error) {
-        console.error('Error buying fruit:', error);
+        if (error.response && error.response.status === 400) {
+            // Handle insufficient funds error
+            yield put({ type: 'BUY_FRUIT_FAILURE', payload: { error: error.response.data.error } });
+        } else {
+            console.error('Error buying fruit:', error);
+        }
     }
 }
 //fetch purchased fruit
