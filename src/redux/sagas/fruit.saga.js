@@ -1,7 +1,7 @@
 import { put, call, takeLatest, select, all, takeEvery} from 'redux-saga/effects';
 import axios from 'axios';
 
-
+    
 // Fetch Fruits Saga
 export function* fetchFruit() {
     try {
@@ -15,20 +15,12 @@ export function* fetchFruit() {
 // Buy Fruit Saga
 export function* buyFruit(action) {
     try {
-        const response = yield call(axios.post, '/api/fruit/buy', action.payload);
-
-        if (response.status === 200) {
-            // Fetch updated average price
-            yield put({ type: 'FETCH_FRUIT_AVERAGE_PRICE_REQUEST', payload: { fruitId: action.payload.fruitId } });
-            yield put({ type: 'BUY_FRUIT_SUCCESS', payload: action.payload });
-        }
+        yield call(axios.post, '/api/fruit/buy', action.payload);
+         // Fetch updated average price
+        yield put({ type: 'FETCH_FRUIT_AVERAGE_PRICE_REQUEST', payload: { fruitId: action.payload.fruitId } });
+        yield put({ type: 'BUY_FRUIT_SUCCESS', payload: action.payload });
     } catch (error) {
-        if (error.response && error.response.status === 400) {
-            // Handle insufficient funds error
-            yield put({ type: 'BUY_FRUIT_FAILURE', payload: { error: error.response.data.error } });
-        } else {
-            console.error('Error buying fruit:', error);
-        }
+        console.error('Error buying fruit:', error);
     }
 }
 //fetch purchased fruit
@@ -52,25 +44,23 @@ export function* sellFruit(action) {
     }
 }
 
+// // Helper function to generate new price
+// const generateNewPrice = (currentPrice) => {
+//   const change = (Math.random() * 0.49 + 0.01) * (Math.random() < 0.5 ? -1 : 1);
+//   let newPrice = Math.max(0.50, Math.min(9.99, parseFloat(currentPrice) + change));
+//   return parseFloat(newPrice.toFixed(2));
+// };
+
 // Saga to update fruit prices
 function* updatePricesSaga() {
-    try {
-        const fruits = yield select(state => state.fruit.fruits);
-
-        const updatePromises = fruits.map(fruit => {
-            const { id, current_price } = fruit;
-            return call(axios.post, '/api/fruit/update-prices', { fruitId: id, currentPrice: current_price });
-        });
-
-        const responses = yield all(updatePromises);
-        const updatedPrices = responses.reduce((acc, response) => {
-            acc[response.data.fruitId] = response.data.newPrice;
-            return acc;
-        }, {});
-
-        yield put({ type: 'UPDATE_FRUIT_PRICES', payload: updatedPrices });
+  try {
+        // Request the server to calculate and update fruit prices
+        yield call(axios.post, '/api/fruit/update-prices');
+        
+        // Optionally, refetch the updated prices from the server
+        yield put({ type: 'FETCH_FRUIT' });
     } catch (error) {
-        console.error('Error updating fruit prices:', error);
+        console.error('Error requesting price update from server:', error);
     }
 }
 // Saga to get averaged purchased price

@@ -58,7 +58,7 @@ router.post('/buy', async (req, res) => {
         const userResult = await client.query('SELECT "total_cash" FROM "user" WHERE "id" = $1', [req.user.id]);
         const userCash = parseFloat(userResult.rows[0].total_cash);
         if (userCash < totalCost) {
-            return res.status(400).json({ error: 'Insufficient funds' });
+            throw new Error('Insufficient funds');
         }
 
         // Deduct cash from user
@@ -161,34 +161,28 @@ router.post('/update-prices', async (req, res) => {
         return res.sendStatus(401);
     }
 
-    const { fruitId, currentPrice } = req.body;
-
-    if (!fruitId || !currentPrice) {
-        return res.sendStatus(400);
-    }
-
     const client = await pool.connect();
     try {
         await client.query('BEGIN');
 
-        // Lock the row to prevent concurrent updates
-        await client.query('SELECT "current_price" FROM "fruit" WHERE "id" = $1 FOR UPDATE', [fruitId]);
+        // Fetch all fruits
+        const result = await client.query('SELECT id, current_price FROM fruit');
+        const fruits = result.rows;
 
-        // Calculate new price 
-        const change = (Math.random() * 0.49 + 0.01) * (Math.random() < 0.5 ? -1 : 1);
-        let newPrice = Math.max(0.50, Math.min(9.99, parseFloat(currentPrice) + change));
-        newPrice = parseFloat(newPrice.toFixed(2));
+        // Calculate new prices
+        const updatePromises = fruits.map(fruit => {
+            const currentPrice = parseFloat(fruit.current_price);
+            const change = (Math.random() * 0.49 + 0.01) * (Math.random() < 0.5 ? -1 : 1);
+            const newPrice = Math.max(0.50, Math.min(9.99, currentPrice + change)).toFixed(2);
+            return client.query('UPDATE fruit SET current_price = $1 WHERE id = $2', [newPrice, fruit.id]);
+        });
 
-        // Update fruit price
-        await client.query(
-            'UPDATE "fruit" SET "current_price" = $1 WHERE "id" = $2',
-            [newPrice, fruitId]
-        );
-
+        // Execute all updates
+        await Promise.all(updatePromises);
         await client.query('COMMIT');
-        res.json({ newPrice });
+        res.sendStatus(200);
     } catch (error) {
-        console.error('Error updating fruit prices:', error);
+        console.error('Error calculating and updating prices:', error);
         await client.query('ROLLBACK');
         res.sendStatus(500);
     } finally {
