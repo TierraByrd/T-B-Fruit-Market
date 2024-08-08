@@ -1,4 +1,4 @@
-import { put, call, takeLatest, select, all, takeEvery} from 'redux-saga/effects';
+import { put, call, takeLatest, all, takeEvery} from 'redux-saga/effects';
 import axios from 'axios';
 
     
@@ -76,6 +76,7 @@ function* watchPriceUpdates() {
     yield call(updatePricesSaga); // Initial update
     yield takeLatest('UPDATE_PRICES_INTERVAL', updatePricesSaga); // Handle price updates on action
 }
+
 
 // Root Saga
 export default function* rootSaga() {
