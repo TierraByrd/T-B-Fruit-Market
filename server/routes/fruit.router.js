@@ -2,6 +2,7 @@ const express = require('express');
 const pool = require('../modules/pool');
 const router = express.Router();
 
+
 /**
  * GET route to fetch all fruits
  */
@@ -156,11 +157,9 @@ router.post('/sell', async (req, res) => {
 /**
  * POST route to update fruit prices
  */
-router.post('/update-prices', async (req, res) => {
-    if (!req.isAuthenticated()) {
-        return res.sendStatus(401);
-    }
 
+// Function to update fruit prices
+async function updateFruitPrices() {
     const client = await pool.connect();
     try {
         await client.query('BEGIN');
@@ -180,15 +179,33 @@ router.post('/update-prices', async (req, res) => {
         // Execute all updates
         await Promise.all(updatePromises);
         await client.query('COMMIT');
-        res.sendStatus(200);
     } catch (error) {
         console.error('Error calculating and updating prices:', error);
         await client.query('ROLLBACK');
-        res.sendStatus(500);
     } finally {
         client.release();
     }
+}
+
+// Route to update fruit prices
+router.post('/update-prices', async (req, res) => {
+    if (!req.isAuthenticated()) {
+        return res.sendStatus(401);
+    }
+
+    try {
+        await updateFruitPrices();
+        res.sendStatus(200);
+    } catch (error) {
+        console.error('Error in /update-prices route:', error);
+        res.sendStatus(500);
+    }
 });
+
+// update prices every 15 seconds
+const UPDATE_INTERVAL = 15 * 1000; 
+setInterval(updateFruitPrices, UPDATE_INTERVAL);
+
 
 /**
  * GET route to fetch purchased fruits for the authenticated user
@@ -213,6 +230,7 @@ router.get('/purchased', async (req, res) => {
         res.sendStatus(500);
     }
 });
+
 router.get('/:fruitId/average-price', async (req, res) => {
     const { fruitId } = req.params;
 
@@ -230,4 +248,5 @@ router.get('/:fruitId/average-price', async (req, res) => {
         res.sendStatus(500);
     }
 });
+
 module.exports = router;
